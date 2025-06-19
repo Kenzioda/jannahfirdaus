@@ -131,27 +131,25 @@ if (preloader && heroVideo) {
     selector: '.glightbox'
   });
 
-  // --- Robust history state for Glightbox (mobile compatible) ---
+  // --- Improved Glightbox history handling ---
   if (glightbox) {
-    let glightboxJustOpened = false;
+    let glightboxHistoryPushed = false;
     glightbox.on('open', () => {
-      // Always push a new state when opening
-      glightboxJustOpened = true;
-      history.pushState({ glightboxOpen: true }, '');
+      if (!glightboxHistoryPushed) {
+        history.pushState({ glightboxOpen: true }, '');
+        glightboxHistoryPushed = true;
+      }
     });
     glightbox.on('close', () => {
-      // Only go back if the last state was pushed by glightbox
-      if (glightboxJustOpened) {
-        glightboxJustOpened = false;
-        history.back();
-      }
+      // Do NOT call history.back() here. Only close the modal.
+      glightboxHistoryPushed = false;
     });
   }
 
   window.addEventListener('popstate', function (event) {
-    // Always try to close Glightbox if open
     if (glightbox && glightbox.isOpen && glightbox.isOpen()) {
       glightbox.close();
+      // After closing, do NOT call history.back() again.
     }
   });
 
