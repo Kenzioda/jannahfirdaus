@@ -131,6 +131,25 @@ if (preloader && heroVideo) {
     selector: '.glightbox'
   });
 
+  // --- Add history state for Glightbox ---
+  if (glightbox) {
+    glightbox.on('open', () => {
+      history.pushState({ glightboxOpen: true }, '');
+    });
+    glightbox.on('close', () => {
+      // Only go back if the last state was pushed by glightbox
+      if (history.state && history.state.glightboxOpen) {
+        history.back();
+      }
+    });
+  }
+
+  window.addEventListener('popstate', function (event) {
+    if (glightbox && glightbox.isOpen()) {
+      glightbox.close();
+    }
+  });
+
   /**
    * Init isotope layout and filters
    */
