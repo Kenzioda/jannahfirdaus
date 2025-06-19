@@ -127,29 +127,34 @@ if (preloader && heroVideo) {
   /**
    * Initiate glightbox
    */
-  const glightbox = GLightbox({
-    selector: '.glightbox'
+  const glightbox = GLightbox({ selector: '.glightbox' });
+
+  let lightboxHistoryActive = false;
+
+  // Open: push state only if not already open
+  glightbox.on('open', () => {
+    if (!lightboxHistoryActive) {
+      history.pushState({ glightboxOpen: true }, '', '#lightbox');
+      lightboxHistoryActive = true;
+    }
   });
 
-  // --- Improved Glightbox history handling ---
-  if (glightbox) {
-    let glightboxHistoryPushed = false;
-    glightbox.on('open', () => {
-      if (!glightboxHistoryPushed) {
-        history.pushState({ glightboxOpen: true }, '');
-        glightboxHistoryPushed = true;
+  // Close: if closed by X, go back in history if we pushed a state
+  glightbox.on('close', () => {
+    if (lightboxHistoryActive) {
+      lightboxHistoryActive = false;
+      // Only go back if the current URL is #lightbox (or state is glightboxOpen)
+      if (window.location.hash === '#lightbox' || (history.state && history.state.glightboxOpen)) {
+        history.back();
       }
-    });
-    glightbox.on('close', () => {
-      // Do NOT call history.back() here. Only close the modal.
-      glightboxHistoryPushed = false;
-    });
-  }
+    }
+  });
 
+  // Back button: close modal if open, do not navigate away
   window.addEventListener('popstate', function (event) {
     if (glightbox && glightbox.isOpen && glightbox.isOpen()) {
       glightbox.close();
-      // After closing, do NOT call history.back() again.
+      // Do not call history.back() here, just close the modal
     }
   });
 
