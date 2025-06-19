@@ -131,21 +131,26 @@ if (preloader && heroVideo) {
     selector: '.glightbox'
   });
 
-  // --- Add history state for Glightbox ---
+  // --- Robust history state for Glightbox (mobile compatible) ---
   if (glightbox) {
+    let glightboxJustOpened = false;
     glightbox.on('open', () => {
+      // Always push a new state when opening
+      glightboxJustOpened = true;
       history.pushState({ glightboxOpen: true }, '');
     });
     glightbox.on('close', () => {
       // Only go back if the last state was pushed by glightbox
-      if (history.state && history.state.glightboxOpen) {
+      if (glightboxJustOpened) {
+        glightboxJustOpened = false;
         history.back();
       }
     });
   }
 
   window.addEventListener('popstate', function (event) {
-    if (glightbox && glightbox.isOpen()) {
+    // Always try to close Glightbox if open
+    if (glightbox && glightbox.isOpen && glightbox.isOpen()) {
       glightbox.close();
     }
   });
