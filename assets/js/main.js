@@ -125,45 +125,50 @@ if (preloader && heroVideo) {
   window.addEventListener('load', aosInit);
 
   /**
-   * Initiate glightbox
+   * Initiate glightbox (hash-based modal control)
    */
   const glightbox = GLightbox({ selector: '.glightbox' });
-  let lightboxHistoryActive = false;
-  let mapModalHistoryActive = false;
+  let lightboxHashActive = false;
 
-  // Open: push state only if not already open
+  // Open: set hash to #lightbox
   glightbox.on('open', () => {
-    if (!lightboxHistoryActive) {
-      history.pushState({ glightboxOpen: true }, '', '#lightbox');
-      lightboxHistoryActive = true;
+    if (window.location.hash !== '#lightbox') {
+      lightboxHashActive = true;
+      window.location.hash = 'lightbox';
     }
   });
 
-  // Close: if closed by X or swipe, always use history.back() to trigger popstate
+  // Close: set hash to '' (removes #lightbox)
   glightbox.on('close', () => {
-    if (lightboxHistoryActive) {
-      lightboxHistoryActive = false;
-      // Only go back if the current state is glightbox
-      if (window.location.hash === '#lightbox' || (history.state && history.state.glightboxOpen)) {
+    if (lightboxHashActive) {
+      lightboxHashActive = false;
+      if (window.location.hash === '#lightbox') {
+        // This will trigger hashchange and close modal if needed
         history.back();
       }
     }
   });
 
-  // === Map Modal Handling ===
+  // Hashchange event for modal control
+  window.addEventListener('hashchange', function() {
+    if (window.location.hash !== '#lightbox' && glightbox.isOpen && glightbox.isOpen()) {
+      lightboxHashActive = false;
+      glightbox.close();
+    }
+  });
+
+  // === Map Modal Handling (unchanged) ===
   function openMap() {
     var mapModal = document.getElementById('map-modal');
-    if (mapModal && !mapModalHistoryActive) {
+    if (mapModal && mapModal.style.display !== 'block') {
       mapModal.style.display = 'block';
       history.pushState({ mapOpen: true }, '', '#map');
-      mapModalHistoryActive = true;
     }
   }
   function closeMap() {
     var mapModal = document.getElementById('map-modal');
-    if (mapModal && mapModalHistoryActive) {
+    if (mapModal && mapModal.style.display === 'block') {
       mapModal.style.display = 'none';
-      mapModalHistoryActive = false;
       if (window.location.hash === '#map' || (history.state && history.state.mapOpen)) {
         history.back();
       }
@@ -176,14 +181,9 @@ if (preloader && heroVideo) {
     });
   });
 
-  // === Centralized popstate handler ===
+  // Remove popstate logic for Glightbox (keep for map modal if needed)
   window.addEventListener('popstate', function(event) {
-    // Handle Glightbox
-    if (glightbox && glightbox.isOpen && glightbox.isOpen()) {
-      glightbox.close();
-      return;
-    }
-    // Handle Map Modal
+    // Only handle map modal here
     var mapModal = document.getElementById('map-modal');
     if (mapModal && mapModal.style.display === 'block') {
       closeMap();
