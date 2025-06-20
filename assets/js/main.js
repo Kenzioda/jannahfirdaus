@@ -170,15 +170,11 @@ if (preloader && heroVideo) {
   // Hashchange event for modal control
   window.addEventListener('hashchange', function(event) {
     logDebug('hashchange event. New hash: ' + window.location.hash + ' Glightbox open: ' + (glightbox.isOpen && glightbox.isOpen()));
-    // If Glightbox is open and hash is not #lightbox, close Glightbox and prevent site navigation
+    // If Glightbox is open and hash is not #lightbox, close Glightbox
     if (window.location.hash !== '#lightbox' && glightbox.isOpen && glightbox.isOpen()) {
       lightboxHashActive = false;
       glightbox.close();
       logDebug('hashchange triggered Glightbox close');
-      // Prevent further navigation (for mobile browsers)
-      if (history.state && history.state.lightboxOpen) {
-        history.pushState(null, '', window.location.pathname + window.location.search);
-      }
     }
   });
 
@@ -210,13 +206,18 @@ if (preloader && heroVideo) {
 
   // Remove popstate logic for Glightbox (keep for map modal if needed)
   window.addEventListener('popstate', function(event) {
+    logDebug('popstate event. Current hash: ' + window.location.hash + ' Glightbox open: ' + (glightbox.isOpen && glightbox.isOpen()));
     // Only handle map modal here
     var mapModal = document.getElementById('map-modal');
     if (mapModal && mapModal.style.display === 'block') {
       closeMap();
       return;
     }
-    // (Optional) Add other modal checks here
+    // Also handle Glightbox modal
+    if (glightbox.isOpen && glightbox.isOpen()) {
+      glightbox.close();
+      logDebug('popstate triggered Glightbox close');
+    }
   });
 
   /**
