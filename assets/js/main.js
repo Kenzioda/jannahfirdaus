@@ -234,7 +234,37 @@ if (preloader && heroVideo) {
   /**
    * Initiate glightbox
    */
-        const glightbox = GLightbox({
-          selector: '.glightbox'
-        });
+  const glightbox = GLightbox({
+    selector: '.glightbox'
+  });
+
+  // --- GLightbox Back Button Support ---
+  let glightboxIsOpen = false;
+  let ignoreNextPopState = false;
+
+  glightbox.on('open', () => {
+    glightboxIsOpen = true;
+    // Push a new state so back button will close the lightbox
+    history.pushState({ glightbox: true }, '');
+  });
+
+  glightbox.on('close', () => {
+    glightboxIsOpen = false;
+    // When closing via UI, go back in history if the state was pushed
+    if (history.state && history.state.glightbox) {
+      ignoreNextPopState = true;
+      history.back();
+    }
+  });
+
+  window.addEventListener('popstate', function (e) {
+    if (ignoreNextPopState) {
+      // Prevent double close
+      ignoreNextPopState = false;
+      return;
+    }
+    if (glightboxIsOpen) {
+      glightbox.close();
+    }
+  });
     })();
