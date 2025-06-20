@@ -129,7 +129,6 @@ if (preloader && heroVideo) {
    */
   const glightbox = GLightbox({ selector: '.glightbox' });
   let lightboxHistoryActive = false;
-  let popstateInitiated = false;
   let mapModalHistoryActive = false;
 
   // Open: push state only if not already open
@@ -140,15 +139,14 @@ if (preloader && heroVideo) {
     }
   });
 
-  // Close: if closed by X or swipe, go back in history if we pushed a state
+  // Close: if closed by X or swipe, always use history.back() to trigger popstate
   glightbox.on('close', () => {
     if (lightboxHistoryActive) {
       lightboxHistoryActive = false;
-      if (!popstateInitiated && (window.location.hash === '#lightbox' || (history.state && history.state.glightboxOpen))) {
-        // Only go back if not already triggered by popstate
+      // Only go back if the current state is glightbox
+      if (window.location.hash === '#lightbox' || (history.state && history.state.glightboxOpen)) {
         history.back();
       }
-      popstateInitiated = false;
     }
   });
 
@@ -182,12 +180,7 @@ if (preloader && heroVideo) {
   window.addEventListener('popstate', function(event) {
     // Handle Glightbox
     if (glightbox && glightbox.isOpen && glightbox.isOpen()) {
-      popstateInitiated = true;
       glightbox.close();
-      // Use replaceState to clean up ghost entry if needed
-      if (window.location.hash === '' && history.state && !history.state.glightboxOpen) {
-        history.replaceState({}, '', window.location.pathname + window.location.search);
-      }
       return;
     }
     // Handle Map Modal
