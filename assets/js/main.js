@@ -160,8 +160,9 @@ if (preloader && heroVideo) {
     if (lightboxHashActive) {
       lightboxHashActive = false;
       if (window.location.hash === '#lightbox') {
-        history.back();
-        logDebug('Called history.back() to remove #lightbox');
+        // Use location.hash = '' instead of history.back() for better mobile compatibility
+        location.hash = '';
+        logDebug('Set location.hash = "" to remove #lightbox');
       }
     }
   });
