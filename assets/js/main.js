@@ -128,8 +128,8 @@ if (preloader && heroVideo) {
    * Initiate glightbox
    */
   const glightbox = GLightbox({ selector: '.glightbox' });
-
   let lightboxHistoryActive = false;
+  let mapModalHistoryActive = false;
 
   // Open: push state only if not already open
   glightbox.on('open', () => {
@@ -143,19 +143,52 @@ if (preloader && heroVideo) {
   glightbox.on('close', () => {
     if (lightboxHistoryActive) {
       lightboxHistoryActive = false;
-      // Only go back if the current URL is #lightbox (or state is glightboxOpen)
       if (window.location.hash === '#lightbox' || (history.state && history.state.glightboxOpen)) {
         history.back();
       }
     }
   });
 
-  // Back button: close modal if open, do not navigate away
-  window.addEventListener('popstate', function (event) {
+  // === Map Modal Handling ===
+  function openMap() {
+    var mapModal = document.getElementById('map-modal');
+    if (mapModal && !mapModalHistoryActive) {
+      mapModal.style.display = 'block';
+      history.pushState({ mapOpen: true }, '', '#map');
+      mapModalHistoryActive = true;
+    }
+  }
+  function closeMap() {
+    var mapModal = document.getElementById('map-modal');
+    if (mapModal && mapModalHistoryActive) {
+      mapModal.style.display = 'none';
+      mapModalHistoryActive = false;
+      if (window.location.hash === '#map' || (history.state && history.state.mapOpen)) {
+        history.back();
+      }
+    }
+  }
+  document.querySelectorAll('img[data-map="open"]').forEach(function(img) {
+    img.addEventListener('click', function(e) {
+      e.preventDefault();
+      openMap();
+    });
+  });
+
+  // === Centralized popstate handler ===
+  window.addEventListener('popstate', function(event) {
+    // Handle Glightbox
     if (glightbox && glightbox.isOpen && glightbox.isOpen()) {
       glightbox.close();
-      // Do not call history.back() here, just close the modal
+      return;
     }
+    // Handle Map Modal
+    var mapModal = document.getElementById('map-modal');
+    if (mapModal && mapModal.style.display === 'block') {
+      closeMap();
+      return;
+    }
+    // (Optional) Add other modal checks here
   });
 
   /**
@@ -251,58 +284,3 @@ if (preloader && heroVideo) {
   document.addEventListener('scroll', navmenuScrollspy);
 
 })();
-
-// Track if user has interacted with a picture
-document.querySelectorAll('.alert-on-back').forEach(function(img) {
-  img.addEventListener('click', function() {
-    sessionStorage.setItem('touchedPicture', 'true');
-  });
-  img.addEventListener('touchstart', function() {
-    sessionStorage.setItem('touchedPicture', 'true');
-  });
-});
-
-// Show alert on back navigation if a picture was touched
-window.addEventListener('popstate', function() {
-  if (sessionStorage.getItem('touchedPicture') === 'true') {
-    alert('You interacted with a picture! Are you sure you want to go back?');
-    sessionStorage.removeItem('touchedPicture');
-  }
-});
-
-// === Map Modal Back Button Handling ===
-// Open the map/modal and push a new history state
-function openMap() {
-  var mapModal = document.getElementById('map-modal');
-  if (mapModal) {
-    mapModal.style.display = 'block';
-    history.pushState({ mapOpen: true }, '');
-  }
-}
-
-// Close the map/modal
-function closeMap() {
-  var mapModal = document.getElementById('map-modal');
-  if (mapModal) {
-    mapModal.style.display = 'none';
-  }
-}
-
-// Attach to all images that should open the map
-// Usage: <img src="..." data-map="open" ...>
-document.querySelectorAll('img[data-map="open"]').forEach(function(img) {
-  img.addEventListener('click', function(e) {
-    e.preventDefault();
-    openMap();
-  });
-});
-
-// Listen for back button to close the map/modal instead of leaving the site
-window.addEventListener('popstate', function(event) {
-  var mapModal = document.getElementById('map-modal');
-  if (mapModal && mapModal.style.display === 'block') {
-    closeMap();
-    // Optionally, prevent further back navigation
-    // history.pushState(null, '');
-  }
-});
