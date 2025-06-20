@@ -167,12 +167,17 @@ if (preloader && heroVideo) {
   });
 
   // Hashchange event for modal control
-  window.addEventListener('hashchange', function() {
+  window.addEventListener('hashchange', function(event) {
     logDebug('hashchange event. New hash: ' + window.location.hash + ' Glightbox open: ' + (glightbox.isOpen && glightbox.isOpen()));
+    // If Glightbox is open and hash is not #lightbox, close Glightbox and prevent site navigation
     if (window.location.hash !== '#lightbox' && glightbox.isOpen && glightbox.isOpen()) {
       lightboxHashActive = false;
       glightbox.close();
       logDebug('hashchange triggered Glightbox close');
+      // Prevent further navigation (for mobile browsers)
+      if (history.state && history.state.lightboxOpen) {
+        history.pushState(null, '', window.location.pathname + window.location.search);
+      }
     }
   });
 
