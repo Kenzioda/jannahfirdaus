@@ -124,6 +124,20 @@ if (preloader && heroVideo) {
   }
   window.addEventListener('load', aosInit);
 
+  // === Debug log utility ===
+  function logDebug(msg) {
+    let logDiv = document.getElementById('debug-log');
+    if (!logDiv) {
+      logDiv = document.createElement('div');
+      logDiv.id = 'debug-log';
+      logDiv.style = 'position:fixed;bottom:0;left:0;width:100vw;max-height:40vh;overflow:auto;background:rgba(0,0,0,0.8);color:#0f0;font-size:12px;z-index:99999;padding:8px;pointer-events:auto;';
+      document.body.appendChild(logDiv);
+    }
+    const time = new Date().toLocaleTimeString();
+    logDiv.innerHTML += `<div>[${time}] ${msg}</div>`;
+    logDiv.scrollTop = logDiv.scrollHeight;
+  }
+
   /**
    * Initiate glightbox (hash-based modal control with debug logging)
    */
@@ -132,34 +146,33 @@ if (preloader && heroVideo) {
 
   // Open: set hash to #lightbox
   glightbox.on('open', () => {
-    console.log('[DEBUG] Glightbox open event fired. Current hash:', window.location.hash);
+    logDebug('Glightbox open event fired. Current hash: ' + window.location.hash);
     if (window.location.hash !== '#lightbox') {
       lightboxHashActive = true;
       window.location.hash = 'lightbox';
-      console.log('[DEBUG] Set hash to #lightbox');
+      logDebug('Set hash to #lightbox');
     }
   });
 
   // Close: set hash to '' (removes #lightbox)
   glightbox.on('close', () => {
-    console.log('[DEBUG] Glightbox close event fired. Current hash:', window.location.hash);
+    logDebug('Glightbox close event fired. Current hash: ' + window.location.hash);
     if (lightboxHashActive) {
       lightboxHashActive = false;
       if (window.location.hash === '#lightbox') {
-        // This will trigger hashchange and close modal if needed
         history.back();
-        console.log('[DEBUG] Called history.back() to remove #lightbox');
+        logDebug('Called history.back() to remove #lightbox');
       }
     }
   });
 
   // Hashchange event for modal control
   window.addEventListener('hashchange', function() {
-    console.log('[DEBUG] hashchange event. New hash:', window.location.hash, 'Glightbox open:', glightbox.isOpen && glightbox.isOpen());
+    logDebug('hashchange event. New hash: ' + window.location.hash + ' Glightbox open: ' + (glightbox.isOpen && glightbox.isOpen()));
     if (window.location.hash !== '#lightbox' && glightbox.isOpen && glightbox.isOpen()) {
       lightboxHashActive = false;
       glightbox.close();
-      console.log('[DEBUG] hashchange triggered Glightbox close');
+      logDebug('hashchange triggered Glightbox close');
     }
   });
 
@@ -169,7 +182,7 @@ if (preloader && heroVideo) {
     if (mapModal && mapModal.style.display !== 'block') {
       mapModal.style.display = 'block';
       history.pushState({ mapOpen: true }, '', '#map');
-      console.log('[DEBUG] Map modal opened, pushed #map');
+      logDebug('Map modal opened, pushed #map');
     }
   }
   function closeMap() {
@@ -178,7 +191,7 @@ if (preloader && heroVideo) {
       mapModal.style.display = 'none';
       if (window.location.hash === '#map' || (history.state && history.state.mapOpen)) {
         history.back();
-        console.log('[DEBUG] Map modal closed, called history.back()');
+        logDebug('Map modal closed, called history.back()');
       }
     }
   }
