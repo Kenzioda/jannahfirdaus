@@ -125,44 +125,51 @@ if (preloader && heroVideo) {
   window.addEventListener('load', aosInit);
 
   /**
-   * Initiate glightbox (hash-based modal control)
+   * Initiate glightbox (hash-based modal control with debug logging)
    */
   const glightbox = GLightbox({ selector: '.glightbox' });
   let lightboxHashActive = false;
 
   // Open: set hash to #lightbox
   glightbox.on('open', () => {
+    console.log('[DEBUG] Glightbox open event fired. Current hash:', window.location.hash);
     if (window.location.hash !== '#lightbox') {
       lightboxHashActive = true;
       window.location.hash = 'lightbox';
+      console.log('[DEBUG] Set hash to #lightbox');
     }
   });
 
   // Close: set hash to '' (removes #lightbox)
   glightbox.on('close', () => {
+    console.log('[DEBUG] Glightbox close event fired. Current hash:', window.location.hash);
     if (lightboxHashActive) {
       lightboxHashActive = false;
       if (window.location.hash === '#lightbox') {
         // This will trigger hashchange and close modal if needed
         history.back();
+        console.log('[DEBUG] Called history.back() to remove #lightbox');
       }
     }
   });
 
   // Hashchange event for modal control
   window.addEventListener('hashchange', function() {
+    console.log('[DEBUG] hashchange event. New hash:', window.location.hash, 'Glightbox open:', glightbox.isOpen && glightbox.isOpen());
     if (window.location.hash !== '#lightbox' && glightbox.isOpen && glightbox.isOpen()) {
       lightboxHashActive = false;
       glightbox.close();
+      console.log('[DEBUG] hashchange triggered Glightbox close');
     }
   });
 
-  // === Map Modal Handling (unchanged) ===
+  // === Map Modal Handling (unchanged, with debug) ===
   function openMap() {
     var mapModal = document.getElementById('map-modal');
     if (mapModal && mapModal.style.display !== 'block') {
       mapModal.style.display = 'block';
       history.pushState({ mapOpen: true }, '', '#map');
+      console.log('[DEBUG] Map modal opened, pushed #map');
     }
   }
   function closeMap() {
@@ -171,6 +178,7 @@ if (preloader && heroVideo) {
       mapModal.style.display = 'none';
       if (window.location.hash === '#map' || (history.state && history.state.mapOpen)) {
         history.back();
+        console.log('[DEBUG] Map modal closed, called history.back()');
       }
     }
   }
