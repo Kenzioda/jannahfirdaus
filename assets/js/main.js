@@ -241,17 +241,20 @@ if (preloader && heroVideo) {
   // --- GLightbox Back Button Support ---
   let glightboxIsOpen = false;
   let ignoreNextPopState = false;
+  const GLIGHTBOX_HASH = '#glightbox';
 
   glightbox.on('open', () => {
     glightboxIsOpen = true;
-    // Push a new state so back button will close the lightbox
-    history.pushState({ glightbox: true }, '');
+    // Only push if not already at #glightbox
+    if (location.hash !== GLIGHTBOX_HASH) {
+      history.pushState({ glightbox: true }, '', GLIGHTBOX_HASH);
+    }
   });
 
   glightbox.on('close', () => {
     glightboxIsOpen = false;
-    // When closing via UI, go back in history if the state was pushed
-    if (history.state && history.state.glightbox) {
+    // Only go back if hash is #glightbox
+    if (location.hash === GLIGHTBOX_HASH) {
       ignoreNextPopState = true;
       history.back();
     }
@@ -259,11 +262,17 @@ if (preloader && heroVideo) {
 
   window.addEventListener('popstate', function (e) {
     if (ignoreNextPopState) {
-      // Prevent double close
       ignoreNextPopState = false;
       return;
     }
-    if (glightboxIsOpen) {
+    if (glightboxIsOpen && location.hash !== GLIGHTBOX_HASH) {
+      glightbox.close();
+    }
+  });
+
+  // Also listen for hashchange for better mobile compatibility
+  window.addEventListener('hashchange', function () {
+    if (glightboxIsOpen && location.hash !== GLIGHTBOX_HASH) {
       glightbox.close();
     }
   });
