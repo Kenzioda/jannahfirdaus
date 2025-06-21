@@ -1,5 +1,6 @@
 {
     "workbench.editor.wrapTabs": false,
     "window.density.editorTabHeight": "default",
-    "livePreview.defaultPreviewPath": "/index.html"
+    "livePreview.defaultPreviewPath": "/index.html",
+    "autogitcommit.enable": true
 }
